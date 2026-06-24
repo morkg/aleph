@@ -1,0 +1,33 @@
+{
+  "name": "@morkg/aleph",
+  "version": "1.0.0",
+  "description": "Temporal cryptography and absolute unique value generator based on AES-256 and UUIDv7.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "aleph",
+    "crypto",
+    "uuidv7",
+    "security",
+    "temporal",
+    "aes-256",
+    "morkg"
+  ],
+  "author": "Mork Galarhan",
+  "license": "MIT",
+  "dependencies": {
+    "uuid": "^14.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.0.0",
+    "@types/uuid": "^11.0.0",
+    "typescript": "^5.0.0"
+  }
+}
