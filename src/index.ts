@@ -89,12 +89,37 @@ export const decode = (token: string, secret: string): string => {
 };
 
 /**
+ * Extracts the exact creation date of an Aleph token.
+ * @example
+ * import { origin } from "@morkg/aleph";
+ * * const birthDate = origin(token, "master_secret");
+ * console.log(birthDate.toISOString());
+ * @param token - The previously generated hexadecimal Aleph token.
+ * @param secret - The master key (password) used during encryption.
+ * @returns A JavaScript Date object representing when the token was born.
+ */
+export const origin = (token: string, secret: string): Date => {
+  // 1. Decifra apenas a primeira parte do token para revelar o UUID original
+  const uuid = d(token.substring(0, UUID7_SIZE_CRIPTO), secret);
+
+  // 2. Extrai os primeiros 48 bits (os 8 chars do primeiro bloco + 4 do segundo)
+  const hexTimestamp = uuid.substring(0, 8) + uuid.substring(9, 13);
+
+  // 3. Converte de Hexadecimal para Decimal (Milissegundos)
+  const timestampMs = parseInt(hexTimestamp, 16);
+
+  // 4. Retorna um objeto Date real
+  return new Date(timestampMs);
+};
+
+/**
  * Default Aleph library object.
  * Allows namespace imports: `import aleph from '@morkg/aleph'`.
  */
 const aleph = {
   decode,
   encode,
+  origin,
 };
 
 export default aleph;
