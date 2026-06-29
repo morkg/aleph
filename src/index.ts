@@ -122,28 +122,46 @@ export const decode = (token: string, secret: string): string => {
 };
 
 /**
- * Extracts the exact creation date of an Aleph token.
+ * Extracts the creation and expiration dates of an Aleph token.
  * @example
- * import { origin } from "@morkg/aleph";
- * * const birthDate = origin(token, "master_secret");
- * console.log(birthDate.toISOString());
+ * import { lifetime } from "@morkg/aleph";
+ * const dates = lifetime(token, "master_secret");
+ * console.log(dates.created.toISOString());
+ * console.log(dates.expires?.toISOString());
  * @param token - The previously generated hexadecimal Aleph token.
  * @param secret - The master key (password) used during encryption.
- * @returns A JavaScript Date object representing when the token was born.
+ * @returns An object containing the token creation date and optional expiration date.
  */
-export const origin = (token: string, secret: string): Date => {
+export const lifetime = (
+  token: string,
+  secret: string,
+): { created: Date; expires: Date | null } => {
   // 1. Decifra apenas a primeira parte do token para revelar o UUID original
   const uuid = d(token.substring(0, UUID7_SIZE_CRIPTO), secret);
 
   // 2. Extrai os primeiros 48 bits (os 8 chars do primeiro bloco + 4 do segundo)
   const hexTimestamp = uuid.substring(0, 8) + uuid.substring(9, 13);
 
-  // 3. Converte de Hexadecimal para Decimal (Milissegundos)
+  // 3. Converte de hexadecimal para milissegundos
   const timestampMs = parseInt(hexTimestamp, 16);
+  const created = new Date(timestampMs);
 
-  // 4. Retorna um objeto Date real
-  return new Date(timestampMs);
+  // 4. Decifra o payload para buscar a data de expiração, se houver
+  const decrypted = d(
+    token.substring(UUID7_SIZE_CRIPTO),
+    uuid,
+  );
+
+  const expMatch = decrypted.match(/\[@EXP:(\d+)\]$/);
+  const expires = expMatch ? new Date(parseInt(expMatch[1], 10)) : null;
+
+  return { created, expires };
 };
+
+/**
+ * @deprecated Use `lifetime` instead.
+ */
+export const origin = lifetime;
 
 /**
  * Default Aleph library object.
@@ -152,6 +170,7 @@ export const origin = (token: string, secret: string): Date => {
 const aleph = {
   decode,
   encode,
+  lifetime,
   origin,
 };
 
